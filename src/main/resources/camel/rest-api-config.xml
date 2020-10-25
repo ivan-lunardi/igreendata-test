@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:spring-security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+                           http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+                           http://camel.apache.org/schema/spring-security http://camel.apache.org/schema/spring-security/camel-spring-security.xsd
+                           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+
+  <context:property-placeholder ignore-resource-not-found="true"
+                                ignore-unresolvable="true"
+                                local-override="true"
+                                location="classpath:camel/rest-api.properties"/>
+
+  <!-- Camel Context -->
+  <camelContext id="rest-api" xmlns="http://camel.apache.org/schema/spring" useMDCLogging="true">
+
+    <propertyPlaceholder id="rest-api-properties" ignoreMissingLocation="true" location="classpath:camel/rest-api.properties"/>
+
+    <restContextRef ref="rest-api-service-context"/>
+
+    <endpoint id="directRestChannel" uri="direct:restChannel"/>
+
+
+    <!-- REST configuration -->
+    <restConfiguration component="netty-http" bindingMode="auto" contextPath="/"
+                       host="{{inbound.rest.host}}" port="{{inbound.rest.port}}"
+                       apiContextPath="api-docs" apiContextListing="false"
+                       enableCORS="true" skipBindingOnErrorCode="false" scheme="http">
+
+      <dataFormatProperty key="prettyPrint" value="{{inbound.rest.pretty_print}}"/>
+      <apiProperty key="cors" value="true"/>
+      <apiProperty key="api.version" value="1.0"/>
+      <apiProperty key="api.title" value="{{rest.api.title}}"/>
+      <apiProperty key="api.description" value="{{swagger-ui.document.description}}"/>
+      <apiProperty key="api.contact.name" value="IGreenData"/>
+    </restConfiguration>
+
+    <!-- Swagger UI -->
+    <route id="swagger-ui" autoStartup="true">
+      <from uri="jetty:http://{{swagger-ui.host}}:{{swagger-ui.port}}?handlers=#swaggerResourceHandler"/>
+      <stop/>
+    </route>
+
+  </camelContext>
+
+
+  <!-- Swagger UI Resource Handler -->
+  <bean id="swaggerResourceHandler" class="org.eclipse.jetty.server.handler.ResourceHandler">
+    <property name="baseResource" ref="swaggerResources"/>
+  </bean>
+
+  <bean id="swaggerResources" class="org.eclipse.jetty.util.resource.ResourceCollection">
+    <property name="resources">
+      <list>
+        <value>#{T(org.eclipse.jetty.util.resource.Resource).newClassPathResource('swagger-ui/')}</value>
+        <value>#{T(org.eclipse.jetty.util.resource.Resource).newClassPathResource('META-INF/resources/webjars/swagger-ui/3.23.8/')}</value>
+      </list>
+    </property>
+  </bean>
+
+  <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+
+  <bean id="accountQueryProcessor" class="com.igreendata.test.processor.AccountQueryProcessor"/>
+
+  <bean id="transactionQueryProcessor" class="com.igreendata.test.processor.TransactionQueryProcessor"/>
+
+</beans>

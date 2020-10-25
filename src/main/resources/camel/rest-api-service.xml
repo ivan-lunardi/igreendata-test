@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <!-- REST API Interfaces Context -->
+    <restContext id="rest-api-service-context" xmlns="http://camel.apache.org/schema/spring">
+
+        <rest path="/rest/v1" bindingMode="off" tag="The Rest API" produces="application/json" consumes="application/json">
+            <description>The Rest API</description>
+
+            <!-- Account List Rest API -->
+            <get uri="/account/list" outType="com.igreendata.test.data.RestBaseResponse">
+                <description>Account List</description>
+                <param name="pageNo" type="query" required="true" dataType="Integer" description="Page number, start with 1, 2, 3, etc"/>
+                <param name="rowCount" type="query" required="true" dataType="Integer" description="Row count (default value is 10)"/>
+                <responseMessage message="Response"/>
+                <responseMessage code="400" message="Bad Request / Request Failed"/>
+                <responseMessage code="401" message="Unauthorized"/>
+                <responseMessage code="403" message="Forbidden"/>
+                <responseMessage code="503" message="No Response"/>
+
+                <route>
+                    <process ref="accountQueryProcessor"/>
+                    <log loggingLevel="INFO" message="Account query response: ${body}" logName="rest-api-service"/>
+                    <onException>
+                        <exception>java.io.IOException</exception>
+                        <handled><constant>true</constant></handled>
+                        <setHeader name="CamelHttpResponseCode"><constant>500</constant></setHeader>
+                        <transform><constant>Internal server error</constant></transform>
+                    </onException>
+                    <onException>
+                        <exception>org.apache.camel.ExchangeTimedOutException</exception>
+                        <handled><constant>true</constant></handled>
+                        <setHeader name="CamelHttpResponseCode"><constant>500</constant></setHeader>
+                        <transform><constant>Request timed out</constant></transform>
+                    </onException>
+                </route>
+            </get>
+
+            <!-- Transaction List Rest API -->
+            <get uri="/transaction/{accountNo}" outType="com.igreendata.test.data.RestBaseResponse">
+                <description>Transaction List</description>
+                <param name="accountNo" type="path" required="true" dataType="Integer" description="Account Number"/>
+                <param name="pageNo" type="query" required="true" dataType="Integer" description="Page number, start with 1, 2, 3, etc"/>
+                <param name="rowCount" type="query" required="true" dataType="Integer" description="Row count (default value is 10)"/>
+                <responseMessage message="Response"/>
+                <responseMessage code="400" message="Bad Request / Request Failed"/>
+                <responseMessage code="401" message="Unauthorized"/>
+                <responseMessage code="403" message="Forbidden"/>
+                <responseMessage code="503" message="No Response"/>
+
+                <route>
+                    <process ref="transactionQueryProcessor"/>
+                    <log loggingLevel="INFO" message="Transaction query response: ${body}" logName="rest-api-service"/>
+                    <onException>
+                        <exception>java.io.IOException</exception>
+                        <handled><constant>true</constant></handled>
+                        <setHeader name="CamelHttpResponseCode"><constant>500</constant></setHeader>
+                        <transform><constant>Internal server error</constant></transform>
+                    </onException>
+                    <onException>
+                        <exception>org.apache.camel.ExchangeTimedOutException</exception>
+                        <handled><constant>true</constant></handled>
+                        <setHeader name="CamelHttpResponseCode"><constant>500</constant></setHeader>
+                        <transform><constant>Request timed out</constant></transform>
+                    </onException>
+                </route>
+            </get>
+        </rest>
+
+
+        <!-- Ping Request for Health Check -->
+        <rest path="/echo" bindingMode="auto" tag="Echo" produces="application/json" consumes="application/json">
+            <description>Ping Service For Health Check</description>
+
+            <get uri="/ping" outType="String">
+                <description>Echo Ping Service</description>
+                <route>
+                    <transform>
+                       <constant>pong</constant>
+                    </transform>
+                </route>
+            </get>
+        </rest>
+
+    </restContext>
+
+</beans>

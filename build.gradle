@@ -1,0 +1,77 @@
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath('gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.13.0')
+  }
+}
+
+plugins {
+  id 'org.springframework.boot' version '2.1.9.RELEASE'
+  id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+  id 'java'
+}
+
+group = 'com.igreendata.test'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation 'org.apache.camel.springboot:camel-spring-boot-starter:3.0.0'
+  implementation 'org.apache.camel:camel-swagger-java:3.0.0'
+  implementation 'org.apache.camel:camel-jpa:3.0.0'
+  implementation 'org.apache.camel:camel-netty:3.0.0'
+  implementation 'org.apache.camel:camel-netty-http:3.0.0'
+  implementation 'org.apache.camel:camel-jetty:3.0.0'
+  implementation 'org.liquibase:liquibase-core:3.8.0'
+  implementation 'org.postgresql:postgresql:42.2.8'
+  implementation 'com.zaxxer:HikariCP:3.3.1'
+  implementation 'org.springframework.data:spring-data-commons:2.0.2.RELEASE'
+  implementation 'org.springframework:spring-context:5.1.10.RELEASE'
+  implementation 'org.springframework.data:spring-data-jpa:2.0.2.RELEASE'
+  implementation 'org.hibernate:hibernate-core:5.3.12.Final'
+  implementation 'org.springframework.data:spring-data-jpa'
+  implementation 'com.fasterxml.jackson.core:jackson-annotations:2.10.0'
+  implementation 'javax.persistence:javax.persistence-api:2.2'
+  implementation 'com.google.code.gson:gson:2.8.5'
+  implementation 'org.apache.commons:commons-lang3:3.9'
+  implementation 'io.swagger:swagger-annotations:1.5.23'
+  implementation 'org.eclipse.jetty:jetty-server:9.4.21.v20190926'
+  implementation 'org.eclipse.jetty:jetty-servlet:9.4.21.v20190926'
+  implementation 'org.eclipse.jetty:jetty-util:9.4.21.v20190926'
+  implementation 'org.eclipse.jetty:jetty-security:9.4.21.v20190926'
+  implementation 'org.eclipse.jetty:jetty-http:9.4.21.v20190926'
+  implementation 'org.eclipse.jetty:jetty-io:9.4.21.v20190926'
+  implementation 'org.eclipse.jetty:jetty-continuation:9.4.21.v20190926'
+  implementation 'org.eclipse.jetty:jetty-http:9.4.21.v20190926'
+  implementation 'org.webjars:swagger-ui:3.23.8'
+  implementation 'org.webjars:webjars-locator:0.37'
+
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api'
+  testImplementation 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+test {
+  useJUnitPlatform()
+}
+
+apply plugin: 'com.palantir.docker'
+
+task unpack(type: Copy) {
+  dependsOn bootJar
+  from(zipTree(tasks.bootJar.outputs.files.singleFile))
+  into("build/dependency")
+}
+
+docker {
+  name "${bootJar.baseName}"
+  copySpec.from(tasks.unpack.outputs).into("dependency")
+  buildArgs(['DEPENDENCY': "dependency"])
+}
+

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet author="ivan" id="25102020233300" context="igreendata">
+        <sql>
+            insert into account (account_no, account_name, account_type, balance_date, currency, opening_available_balance) values ('585309209', 'SGSavings726', 'Savings', '2018-11-08 00:00:00', 'SGD', 84327.51);
+            insert into account (account_no, account_name, account_type, balance_date, currency, opening_available_balance) values ('791066619', 'AUSavings933', 'Savings', '2018-11-08 00:00:00', 'AUD', 88005.93);
+            insert into account (account_no, account_name, account_type, balance_date, currency, opening_available_balance) values ('321143048', 'AUCurrent433', 'Current', '2018-11-08 00:00:00', 'AUD', 38010.62);
+        </sql>
+        <rollback>
+            <sql>
+                delete from account where account_no = '585309209';
+                delete from account where account_no = '791066619';
+                delete from account where account_no = '321143048';
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="ivan" id="25102020233301" context="igreendata">
+        <sql>
+            insert into transaction (account_no, value_date, currency, sign, amount, narrative) values ('585309209', '2018-10-01 00:00:00', 'SGD', 'C', 9540.98, 'Deposit #2');
+            insert into transaction (account_no, value_date, currency, sign, amount, narrative) values ('585309209', '2018-09-20 00:00:00', 'SGD', 'C', 7487.82, 'Deposit #1');
+            insert into transaction (account_no, value_date, currency, sign, amount, narrative) values ('791066619', '2018-09-15 00:00:00', 'AUD', 'C', 5250.55, 'First Deposit');
+            insert into transaction (account_no, value_date, currency, sign, amount, narrative) values ('585309209', '2018-09-02 15:30:00', 'SGD', 'D', 500.00, 'Debit');
+            insert into transaction (account_no, value_date, currency, sign, amount, narrative) values ('585309209', '2018-09-02 09:10:00', 'SGD', 'C', 1500.00, 'Credit');
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

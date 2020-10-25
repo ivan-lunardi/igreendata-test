@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet author="ivan" id="25102020233200" context="igreendata">
+        <sql>
+            create table account (
+              id bigserial primary key,
+              account_no varchar(16),
+              account_name varchar(32),
+              account_type varchar(16),
+              balance_date timestamp,
+              currency varchar(3),
+              opening_available_balance numeric(12,2)
+            );
+        </sql>
+        <rollback>
+            <sql>
+                drop table account;
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="ivan" id="25102020233201" context="igreendata">
+        <sql>
+            create table transaction (
+              id bigserial primary key,
+              account_no varchar(16),
+              value_date timestamp,
+              currency varchar(3),
+              sign char(1),
+              amount numeric(12,2),
+              narrative varchar(64)
+            );
+        </sql>
+        <rollback>
+            <sql>
+                drop table transaction;
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
